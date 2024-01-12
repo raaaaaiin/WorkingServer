@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const validateJwt = require('./middleware');
 const mysql = require('mysql');
 const app = express();
 const port = 3000;
