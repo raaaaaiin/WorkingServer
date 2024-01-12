@@ -10,7 +10,7 @@ const db = mysql.createConnection({
     database: 'nodejscrud',
     port: 3306,
   });
-
+  
   db.connect((err) => {
     if (err) {
       console.error('Error connecting to MySQL database:', err);
@@ -42,5 +42,3 @@ app.get('/validate-and-redirect', (req, res) => {
 app.listen(port, () => {
   console.log(`JWT Server is running on port ${port}`);
 });
-
-//JWT And Database Done with test
