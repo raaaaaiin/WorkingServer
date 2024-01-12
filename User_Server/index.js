@@ -1,9 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const db = require('./db'); 
+const db = require('./db');
+const validateJwt = require('../JWT_Server/middleware'); 
+
 
 const app = express();
 const port = 4000;
+
+app.use(express.json());
 
 function validateJwt(req, res, next) {
     const token = req.headers.authorization;
