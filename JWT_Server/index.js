@@ -38,6 +38,14 @@ app.get('/validate-and-redirect', (req, res) => {
   validateAndRedirect(req, res);
 });
 
+app.get('/protected-route', validateJwt, (req, res) => {
+  const { username } = req.jwtPayload;
+
+  
+  res.json({ message: `Hello, ${username}! This route is protected by JWT validation.` });
+
+});
+
 
 app.listen(port, () => {
   console.log(`JWT Server is running on port ${port}`);
