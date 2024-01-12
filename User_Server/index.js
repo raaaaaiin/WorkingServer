@@ -9,52 +9,103 @@ const port = 4000;
 
 app.use(express.json());
 
-function validateJwt(req, res, next) {
-    const token = req.headers.authorization;
+
+  app.post('/users', validateJwt, (req, res) => {
+    const { username, firstname, lastname, password } = req.body;
   
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized - JWT missing' });
-    }
+    const hashedPassword = bcrypt.hashSync(password, 10);
   
-    jwt.verify(token, 'marcraineerfilosopo06272000', (err, decoded) => {
+    const newUser = {
+      username,
+      firstname,
+      lastname,
+      password: hashedPassword,
+      dateAdded: new Date().toISOString(), 
+    };
+  
+    db.query('INSERT INTO users SET ?', newUser, (err, result) => {
       if (err) {
-        return res.status(401).json({ error: 'Unauthorized - Invalid JWT' });
+        console.error('Error inserting user into the database:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
       }
   
-      req.jwtPayload = decoded;
-      next();
+      res.status(201).json(newUser);
     });
-  }
-
-
-app.use(express.json());
-
-
-app.post('/users', validateJwt, (req, res) => {
+  });
   
-});
-
-
-app.get('/users', validateJwt, (req, res) => {
- 
-});
-
-
-app.get('/users/:username', validateJwt, (req, res) => {
+  app.get('/users', validateJwt, (req, res) => {
+    db.query('SELECT username, firstname, lastname, dateAdded FROM users', (err, results) => {
+      if (err) {
+        console.error('Error retrieving users from the database:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
   
-});
-
-
-app.put('/users/:username', validateJwt, (req, res) => {
- 
-});
-
-
-app.delete('/users/:username', validateJwt, (req, res) => {
+      res.json(results);
+    });
+  });
   
-});
-
-
-app.listen(port, () => {
-  console.log(`User Management Server is running on port ${port}`);
-});
+  app.get('/users/:username', validateJwt, (req, res) => {
+    const { username } = req.params;
+  
+    db.query(
+      'SELECT username, firstname, lastname, dateAdded FROM users WHERE username = ?',
+      [username],
+      (err, results) => {
+        if (err) {
+          console.error('Error retrieving user from the database:', err);
+          return res.status(500).json({ error: 'Internal Server Error' });
+        }
+  
+        if (results.length > 0) {
+          res.json(results[0]);
+        } else {
+          res.status(404).json({ error: 'User not found' });
+        }
+      }
+    );
+  });
+  
+  app.put('/users/:username', validateJwt, (req, res) => {
+    const { username } = req.params;
+    const { firstname, lastname, password } = req.body;
+  
+    const hashedPassword = bcrypt.hashSync(password, 10);
+  
+    db.query(
+      'UPDATE users SET firstname=?, lastname=?, password=? WHERE username=?',
+      [firstname, lastname, hashedPassword, username],
+      (err, result) => {
+        if (err) {
+          console.error('Error updating user in the database:', err);
+          return res.status(500).json({ error: 'Internal Server Error' });
+        }
+  
+        if (result.affectedRows > 0) {
+          res.json({ username, firstname, lastname, password: '*****' });
+        } else {
+          res.status(404).json({ error: 'User not found' });
+        }
+      }
+    );
+  });
+  
+  app.delete('/users/:username', validateJwt, (req, res) => {
+    const { username } = req.params;
+  
+    db.query('DELETE FROM users WHERE username=?', [username], (err, result) => {
+      if (err) {
+        console.error('Error deleting user from the database:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+  
+      if (result.affectedRows > 0) {
+        res.json({ username, message: 'User deleted successfully' });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    });
+  });
+  
+  app.listen(port, () => {
+    console.log(`User Management Server is running on port ${port}`);
+  });
