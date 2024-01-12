@@ -4,13 +4,23 @@ const app = express();
 const port = 3000;
 
 
-app.post('/sign-jwt', (req, res) => {
+function signJwt(req, res) {
   
+}
+
+
+function validateAndRedirect(req, res) {
+  
+}
+
+
+app.post('/sign-jwt', (req, res) => {
+  signJwt(req, res);
 });
 
 
 app.get('/validate-and-redirect', (req, res) => {
-  
+  validateAndRedirect(req, res);
 });
 
 
